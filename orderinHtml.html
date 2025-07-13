@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>인싸이트 도서 및 검사 주문서</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100..900&display=swap');
+
+        * {
+            font-family: 'Noto Sans KR', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2B398F;
+            font-size: 1.8em;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+        }
+
+        input[type="text"], input[type="email"], input[type="tel"] {
+            width: 100%;
+            padding: 15px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .button {
+            background-color: #2B398F;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-size: 1rem;
+        }
+
+        .button:hover {
+            background-color: #1e2a72;
+        }
+
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            margin-top: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .product-header span {
+            flex: 1;
+            text-align: center;
+        }
+
+        .product-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding: 10px 0;
+            border-top: 1px solid #ddd;
+        }
+
+        .product-row span {
+            flex: 0.5;
+            text-align: center;
+        }
+
+        .product-row input[type="text"] {
+            flex: 4;
+            padding: 5px;
+            margin: 0 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .quantity-controls input[type="number"] {
+            width: 60px;
+            text-align: center;
+            font-size: 0.9rem;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            color: #333;
+            box-sizing: border-box;
+        }
+
+        .price {
+            flex: 1;
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .summary {
+            margin-top: 20px;
+            border-top: 1px solid #ddd;
+            padding-top: 10px;
+        }
+
+        .summary table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .summary table, .summary th, .summary td {
+            border: 1px solid #ddd;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .final-cost {
+            font-weight: bold;
+            color: #2B398F;
+            font-size: 1.1em;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                width: 95%;
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.4em;
+            }
+
+            .product-header,
+            .product-row {
+                flex-direction: column;
+                align-items: flex-start;
+                text-align: left;
+            }
+
+            .product-header span,
+            .product-row span {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .quantity-controls {
+                margin-top: 10px;
+            }
+
+            .button {
+                width: 100%;
+                margin-top: 15px;
+            }
+
+            input[type="text"], input[type="email"], input[type="tel"] {
+                width: 100%;
+            }
+
+            .summary table {
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <img src="https://raw.githubusercontent.com/nuuxixv/inpsytmm/9ebd46c24a4b5040c3e20de5e3be2e0a49248ba6/%EC%9E%84%EC%83%81_%EB%AA%A8%EB%B0%94%EC%9D%BC.jpg" alt="배너 이미지" width="560" height="140">
+    <h1>인싸이트 도서 및 검사 주문서</h1>
+    <form id="orderForm">
+        <label for="name">성함을 알려주세요</label>
+        <input type="text" id="name" placeholder="홍길동" required>
+
+        <label for="email">주문서를 받으실 이메일을 알려주세요</label>
+        <input type="email" id="email" placeholder="sample@email.com" required>
+
+        <label for="phone">연락처를 알려주세요</label>
+        <input type="tel" id="phone" placeholder="010-0000-0000" required>
+
+        <label for="address">택배로 받으실 주소지를 알려주세요</label>
+        <input type="text" id="address" placeholder="동/호수까지 정확히 입력해주세요" required>
+
+        <label for="inpsytId">인싸이트 ID를 알려주세요</label>
+        <input type="text" id="inpsytId" placeholder="필수사항이 아닙니다.">
+
+        <label for="request">배송 시 요청사항이 있다면 알려주세요</label>
+        <input type="text" id="request">
+
+        <datalist id="productList"></datalist>
+
+        <div class="product-header">
+            <span style="flex: 0.5;">번호</span>
+            <span style="flex: 4;">상품명</span>
+            <span style="flex: 1;">수량</span>
+            <span style="flex: 1;">가격</span>
+        </div>
+        <div id="products">
+            <div class="product-row">
+                <span>1</span>
+                <input type="text" oninput="updateProductDetails(this)" placeholder="상품명을 입력하세요" list="productList">
+                <div class="quantity-controls">
+                    <input type="number" value="1" min="1" oninput="updateQuantity(this)">
+                </div>
+                <span class="price">0원</span>
+            </div>
+        </div>
+
+        <button type="button" onclick="addProductRow()" class="button" style="margin: 20px auto; display: block;">상품 추가하기</button>
+    </form>
+
+    <div class="summary">
+        <table>
+            <tr>
+                <th>총 비용</th>
+                <th>할인된 비용</th>
+                <th>배송비</th>
+                <th class="final-cost">결제할 최종가</th>
+            </tr>
+            <tr>
+                <td id="totalCost">0원</td>
+                <td id="discountedCost">0원</td>
+                <td id="shippingCost">0원</td>
+                <td id="finalCost" class="final-cost">0원</td>
+            </tr>
+        </table>
+    </div>
+
+    <button type="button" onclick="showConfirmation()" class="button" style="width: 100%;">결제 확인</button>
+</div>
+
+<div class="overlay" id="overlay"></div>
+<div class="popup" id="popup">
+    <p id="confirmationText"></p>
+    <button type="button" onclick="confirmOrder()" class="button">확인</button>
+    <button type="button" onclick="closePopup()" class="button">취소(추가하기)</button>
+</div>
+
+<script>
+    const formatter = new Intl.NumberFormat('ko-KR', {
+        style: 'decimal',
+        minimumFractionDigits: 0,
+    });
+
+    // Populate datalist with products from Google Sheets
+    document.addEventListener("DOMContentLoaded", function() {
+        const productList = document.getElementById("productList");
+        console.log(productData); // 디버깅용으로 productData 로그 출력
+        productData.forEach(product => {
+            const option = document.createElement("option");
+            option.value = product.name;
+            productList.appendChild(option);
+        });
+    });
+
+    function updateProductDetails(inputElement) {
+        const selectedProductName = inputElement.value.trim(); // 공백 제거
+        const selectedProduct = productData.find(product => product.name === selectedProductName);
+        if (selectedProduct) {
+            const productRow = inputElement.closest(".product-row");
+            const priceElement = productRow.querySelector(".price");
+            const quantity = parseInt(productRow.querySelector('input[type="number"]').value);
+
+            // 정가 및 최종가 데이터 저장
+            productRow.dataset.originalPrice = selectedProduct.originalPrice;
+            productRow.dataset.discountedPrice = selectedProduct.discountedPrice;
+
+            // 최종가 * 수량을 적용하여 가격 업데이트
+            const totalPrice = selectedProduct.discountedPrice * quantity;
+            priceElement.innerText = `${formatter.format(totalPrice)}원`;
+        }
+        updateTotalCost(); // 가격 변경 시 총 비용 업데이트
+    }
+
+    function updateQuantity(quantityInput) {
+        const productRow = quantityInput.closest('.product-row');
+        const discountedPrice = parseInt(productRow.dataset.discountedPrice) || 0;
+        const priceElement = productRow.querySelector(".price");
+
+        // 최종가 * 수량을 적용하여 가격 업데이트
+        const totalPrice = discountedPrice * quantityInput.value;
+        priceElement.innerText = `${formatter.format(totalPrice)}원`;
+
+        updateTotalCost(); // 수량 변경 시 총 비용 업데이트
+    }
+
+    function addProductRow() {
+        const products = document.getElementById('products');
+        const productRowCount = products.getElementsByClassName('product-row').length + 1;
+        const productRow = document.createElement('div');
+        productRow.className = 'product-row';
+        productRow.innerHTML = `
+            <span>${productRowCount}</span>
+            <input type="text" oninput="updateProductDetails(this)" placeholder="상품명을 입력하세요" list="productList">
+            <div class="quantity-controls">
+                <input type="number" value="1" min="1" oninput="updateQuantity(this)">
+            </div>
+            <span class="price">0원</span>
+        `;
+        products.appendChild(productRow);
+    }
+
+    // 총 비용, 할인된 비용, 배송비, 결제할 최종가 계산
+    function updateTotalCost() {
+        let totalOriginalCost = 0;
+        let totalDiscountedAmount = 0;
+        let totalDiscountedCost = 0;
+
+        const products = document.querySelectorAll('#products .product-row');
+        products.forEach(product => {
+            const originalPrice = parseInt(product.dataset.originalPrice) || 0; // 정가
+            const discountedPrice = parseInt(product.dataset.discountedPrice) || 0; // 최종가
+            const quantity = parseInt(product.querySelector('input[type="number"]').value);
+
+            // 총 비용 (정가의 합)
+            totalOriginalCost += originalPrice * quantity;
+
+            // 할인된 비용 (정가 - 최종가의 합)
+            totalDiscountedAmount += (originalPrice - discountedPrice) * quantity;
+
+            // 최종가의 합 (가격의 합)
+            totalDiscountedCost += discountedPrice * quantity;
+        });
+
+        // 배송비 설정 (예: 3만원 이상 무료배송, 이하 3,000원)
+        let shippingCost = totalOriginalCost >= 30000 ? 0 : 2500;
+
+        // 결제할 최종가 계산 (최종가의 합 + 배송비가 있을 때만 포함)
+        let finalCost = totalDiscountedCost + (shippingCost === 2500 ? shippingCost : 0);
+
+        // 포맷팅된 값을 각각의 요소에 업데이트
+        document.getElementById('totalCost').innerText = `${formatter.format(totalOriginalCost)}원`;
+        document.getElementById('discountedCost').innerText = `${formatter.format(totalDiscountedAmount)}원`;
+        document.getElementById('shippingCost').innerText = `${formatter.format(shippingCost)}원`;
+        document.getElementById('finalCost').innerText = `${formatter.format(finalCost)}원`;
+    }
+
+    function showConfirmation() {
+        const name = document.getElementById('name').value;
+        const products = document.querySelectorAll('#products .product-row');
+        let totalQuantity = 0;
+        products.forEach(product => {
+            totalQuantity += parseInt(product.querySelector('input[type="number"]').value);
+        });
+
+        const confirmationText = `${name}님께서 구매하신 상품은 총 ${totalQuantity}개입니다.`;
+        document.getElementById('confirmationText').innerText = confirmationText;
+        document.getElementById('overlay').style.display = 'block';
+        document.getElementById('popup').style.display = 'block';
+    }
+
+    function closePopup() {
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('popup').style.display = 'none';
+    }
+
+    function confirmOrder() {
+    closePopup();
+
+    // 주문 데이터 가져오기
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    const phone = document.getElementById('phone').value;
+    const address = document.getElementById('address').value;
+    const inpsytId = document.getElementById('inpsytId').value;
+    const request = document.getElementById('request').value;
+
+    const totalCost = document.getElementById('totalCost').innerText;
+    const discountedCost = document.getElementById('discountedCost').innerText;
+    const shippingCost = document.getElementById('shippingCost').innerText;
+    const finalCost = document.getElementById('finalCost').innerText;
+
+    // 상품명, 수량, 가격 정보를 가져오기
+    const products = document.querySelectorAll('#products .product-row');
+    const productDetails = [];
+    products.forEach((product, index) => {
+        const productName = product.querySelector('input[type="text"]').value;
+        const productQuantity = product.querySelector('input[type="number"]').value;
+        const productPrice = product.querySelector('.price').innerText;
+        productDetails.push({
+            name: productName,
+            quantity: productQuantity,
+            price: productPrice
+        });
+    });
+
+    // Google Apps Script로 데이터 전송
+    google.script.run
+        .withSuccessHandler(function(data) {
+            if (data.result === "success") {
+                alert('주문이 완료되었습니다.');
+            } else {
+                alert('주문에 실패했습니다. 다시 시도해주세요.');
+            }
+        })
+        .withFailureHandler(function(error) {
+            console.error('Error:', error);
+            alert('오류가 발생했습니다. 오류 내용: ' + error.message);
+        })
+        .saveOrderToSheet({
+            name: name,
+            email: email,
+            phone: phone,
+            address: address,
+            inpsytId: inpsytId,
+            request: request,
+            totalCost: totalCost,
+            discountedCost: discountedCost,
+            shippingCost: shippingCost,
+            finalCost: finalCost,
+            products: productDetails
+        });
+}
+</script>
+</body>
+</html>
